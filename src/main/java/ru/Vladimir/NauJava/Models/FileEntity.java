@@ -65,7 +65,7 @@ public class FileEntity {
         return uploadDate;
     }
 
-    // Метод для определения типа файла
+    // TODO Метод для определения типа файла
     public void detectFileType(String fileName) {
         if (fileName != null) {
             int dotIndex = fileName.lastIndexOf('.');

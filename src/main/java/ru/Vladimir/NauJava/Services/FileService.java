@@ -29,10 +29,11 @@ public class FileService {
         this.linkService = linkService;
         this.userService = userService;
         this.fileStorageService = fileStorageService;
+
     }
 
     public void uploadFile(String userId, String filePath) {
-        // Проверка прав пользователя
+
         User user = userService.getUserById(userId);
         if (user == null) {
             throw new RuntimeException("Пользователь не найден");
@@ -40,21 +41,20 @@ public class FileService {
         if (!Files.exists(Paths.get(filePath))) {
             throw new RuntimeException("Файл не найден по указанному пути");
         }
-        // Чтение файла с диска
+
         try {
             byte[] fileBytes = Files.readAllBytes(Paths.get(filePath));
-            System.out.println("Файл 2");
+
             FileEntity file = new FileEntity();
             file.setId(UUID.randomUUID().toString());
-            file.setFileName(filePath);
+            file.setFileName(filePath.substring(filePath.lastIndexOf("\\") + 1));
             file.setOwnerId(userId);
             file.setContent(fileBytes);
-            System.out.println("Файл 1");
-            // Сохранение файла в хранилище
+
             fileStorageService.saveFile(file.getId(), fileBytes);
-            System.out.println("Файл 0");
+
             files.put(file.getId(), file);
-            System.out.println("Файл 5");
+
             user.getFiles().add(file.getId());
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при загрузке файла", e);
@@ -70,10 +70,7 @@ public class FileService {
         FileEntity file = files.get(fileLink.getFileId());
 
         try {
-            // Загрузка файла из хранилища
             byte[] fileBytes = fileStorageService.loadFile(file.getId());
-
-            // Логика сохранения файла на диск
             Files.write(Paths.get("download/" + file.getFileName()), fileBytes);
             System.out.println("Файл " + file.getFileName() + " успешно скачан");
         } catch (IOException e) {
@@ -88,10 +85,8 @@ public class FileService {
 
         FileEntity file = files.remove(fileId);
 
-        // Удаление из хранилища
         fileStorageService.deleteFile(fileId);
 
-        // Обновление списка файлов у владельца
         User owner = userService.getUserById(file.getOwnerId());
         owner.getFiles().remove(fileId);
     }

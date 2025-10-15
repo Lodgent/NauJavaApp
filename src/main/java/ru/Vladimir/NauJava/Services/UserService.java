@@ -13,7 +13,6 @@ import java.util.Map;
 public class UserService {
     private final Map<String, User> users = new HashMap<>();
 
-    // Метод для хеширования пароля
     private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

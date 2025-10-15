@@ -9,12 +9,12 @@ public class FileLink {
     private boolean isExpired;
     private final Date creationDate;
 
-    // Конструктор
+
     public FileLink() {
         this.creationDate = new Date();
     }
 
-    // Геттеры и сеттеры
+
     public String getAccessToken() {
         return accessToken;
     }
@@ -51,7 +51,7 @@ public class FileLink {
         return creationDate;
     }
 
-    // Метод проверки истечения срока действия ссылки
+    // TODO проверки истечения срока действия ссылки
     public boolean checkExpiration() {
         long currentTime = System.currentTimeMillis();
         return currentTime > expirationTime;
