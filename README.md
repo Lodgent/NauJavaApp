@@ -61,7 +61,7 @@ download abcdefghijklmno
 logout
 
 # Регистрация нового пользователя
-register vladimir123 qwerty123
+register downloadUser qwerty123
 
 # Вход в систему
 login downloadUser 123
