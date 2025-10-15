@@ -11,7 +11,7 @@ import java.util.List;
 
 @Component
 public class FileCommandProcessor {
-
+    private String currentUser;
     private final FileService fileService;
     private final LinkService linkService;
     private final UserService userService;
@@ -27,21 +27,7 @@ public class FileCommandProcessor {
         String[] cmd = input.trim().split(" ");
 
         switch (cmd[0].toLowerCase()) {
-            case "upload" -> {
-                if (cmd.length >= 3) {
-                    String userId = cmd[1];
-                    String filePath = cmd[2];
 
-                    try {
-                        fileService.uploadFile(userId, filePath);
-                        System.out.println("Файл успешно загружен!");
-                    } catch (Exception e) {
-                        System.out.println("Ошибка при загрузке файла: " + e.getMessage());
-                    }
-                } else {
-                    System.out.println("Использование: upload <userId> <filePath>");
-                }
-            }
 
             case "download" -> {
                 if (cmd.length >= 2) {
@@ -92,13 +78,70 @@ public class FileCommandProcessor {
                 }
             }
 
+            case "register" -> {
+                if (cmd.length >= 3) {
+                    String username = cmd[1];
+                    String password = cmd[2];
+                    try {
+                        userService.registerUser(username, password);
+                        System.out.println("Пользователь успешно зарегистрирован!");
+                    } catch (RuntimeException e) {
+                        System.out.println("Ошибка регистрации: " + e.getMessage());
+                    }
+                } else {
+                    System.out.println("register <username> <password>");
+                }
+            }
+
+            case "login" -> {
+                if (cmd.length >= 3) {
+                    String username = cmd[1];
+                    String password = cmd[2];
+                    if (userService.authenticateUser(username, password)) {
+                        currentUser = username;
+                        System.out.println("Вход выполнен успешно!");
+                    } else {
+                        System.out.println("Неверный логин или пароль");
+                    }
+                } else {
+                    System.out.println("login <username> <password>");
+                }
+            }
+
+            case "upload" -> {
+                if (currentUser == null) {
+                    System.out.println("Необходимо авторизоваться");
+                    return;
+                }
+                if (cmd.length >= 2) {
+                    String filePath = cmd[1];
+                    try {
+                        fileService.uploadFile(currentUser, filePath);
+                        System.out.println("Файл успешно загружен!");
+                    } catch (Exception e) {
+                        System.out.println("Ошибка загрузки файла: " + e.getMessage());
+                    }
+                } else {
+                    System.out.println("upload <filePath>");
+                }
+            }
+
+            case "logout" -> {
+                currentUser = null;
+                System.out.println("Вы вышли из системы");
+            }
+
+
             case "help" -> {
                 System.out.println("Доступные команды:");
-                System.out.println("upload <userId> <filePath> - загрузить файл");
-                System.out.println("download <link> - скачать файл по ссылке");
-                System.out.println("generate <fileId> <expiration> - создать ссылку на файл");
+                System.out.println("register <username> <password> - регистрация нового пользователя");
+                System.out.println("login <username> <password> - вход в систему");
+                System.out.println("logout - выход из системы");
+                System.out.println("upload <filePath> - загрузка файла");
+                System.out.println("download <link> - скачивание файла по ссылке");
+                System.out.println("generate <fileId> <expiration> - создание ссылки на файл");
                 System.out.println("list - список всех файлов");
-                System.out.println("delete <fileId> - удалить файл");
+                System.out.println("delete <fileId> - удаление файла");
                 System.out.println("help - показать справку");
                 System.out.println("exit - выход");
             }

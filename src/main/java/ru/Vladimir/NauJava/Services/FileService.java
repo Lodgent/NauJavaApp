@@ -9,6 +9,7 @@ import ru.Vladimir.NauJava.Models.FileLink;
 import ru.Vladimir.NauJava.Models.User;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.IOException;
 import java.util.*;
@@ -36,21 +37,24 @@ public class FileService {
         if (user == null) {
             throw new RuntimeException("Пользователь не найден");
         }
-
+        if (!Files.exists(Paths.get(filePath))) {
+            throw new RuntimeException("Файл не найден по указанному пути");
+        }
         // Чтение файла с диска
         try {
             byte[] fileBytes = Files.readAllBytes(Paths.get(filePath));
-
+            System.out.println("Файл 2");
             FileEntity file = new FileEntity();
             file.setId(UUID.randomUUID().toString());
             file.setFileName(filePath);
             file.setOwnerId(userId);
             file.setContent(fileBytes);
-
+            System.out.println("Файл 1");
             // Сохранение файла в хранилище
             fileStorageService.saveFile(file.getId(), fileBytes);
-
+            System.out.println("Файл 0");
             files.put(file.getId(), file);
+            System.out.println("Файл 5");
             user.getFiles().add(file.getId());
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при загрузке файла", e);
