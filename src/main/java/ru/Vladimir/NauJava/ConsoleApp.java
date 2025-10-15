@@ -17,7 +17,7 @@ public class ConsoleApp {
             System.out.println("4. Выйти");
 
             int choice = scanner.nextInt();
-            // обработка выбора
+
         }
     }
 }
