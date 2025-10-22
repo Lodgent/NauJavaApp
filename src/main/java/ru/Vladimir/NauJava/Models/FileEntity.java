@@ -1,18 +1,35 @@
 package ru.Vladimir.NauJava.Models;
 
+import jakarta.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "files")
 public class FileEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    @Column(nullable = false)
     private String fileName;
-    private String ownerId;
-    private byte[] content;
-    private long fileSize;
+
+    @Column(nullable = false)
     private String fileType;
-    private final Date uploadDate;
+
+    @Column(nullable = false)
+    private long fileSize;
+
+    @Column(nullable = false)
+    private Date creationDate;
+
+    @ManyToMany(mappedBy = "files")
+    private Set<FileTag> tags = new HashSet<>();
 
     // Конструктор
     public FileEntity() {
-        this.uploadDate = new Date();
+        this.creationDate = new Date();
     }
 
     // Геттеры и сеттеры
@@ -32,27 +49,6 @@ public class FileEntity {
         this.fileName = fileName;
     }
 
-    public String getOwnerId() {
-        return ownerId;
-    }
-
-    public void setOwnerId(String ownerId) {
-        this.ownerId = ownerId;
-    }
-
-    public byte[] getContent() {
-        return content;
-    }
-
-    public void setContent(byte[] content) {
-        this.content = content;
-        this.fileSize = content.length;
-    }
-
-    public long getFileSize() {
-        return fileSize;
-    }
-
     public String getFileType() {
         return fileType;
     }
@@ -61,18 +57,39 @@ public class FileEntity {
         this.fileType = fileType;
     }
 
-    public Date getUploadDate() {
-        return uploadDate;
+    public long getFileSize() {
+        return fileSize;
     }
 
-    // TODO Метод для определения типа файла
-    public void detectFileType(String fileName) {
-        if (fileName != null) {
-            int dotIndex = fileName.lastIndexOf('.');
-            if (dotIndex > 0) {
-                this.fileType = fileName.substring(dotIndex + 1);
-            }
-        }
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public Set<FileTag> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<FileTag> tags) {
+        this.tags = tags;
+    }
+
+    // Методы для работы с тегами
+    public void addTag(FileTag tag) {
+        tags.add(tag);
+        tag.getFiles().add(this);
+    }
+
+    public void removeTag(FileTag tag) {
+        tags.remove(tag);
+        tag.getFiles().remove(this);
     }
 
     @Override
@@ -80,10 +97,10 @@ public class FileEntity {
         return "FileEntity{" +
                 "id='" + id + '\'' +
                 ", fileName='" + fileName + '\'' +
-                ", ownerId='" + ownerId + '\'' +
-                ", fileSize=" + fileSize +
                 ", fileType='" + fileType + '\'' +
-                ", uploadDate=" + uploadDate +
+                ", fileSize=" + fileSize +
+                ", creationDate=" + creationDate +
+                ", tags=" + tags.size() +
                 '}';
     }
 }
