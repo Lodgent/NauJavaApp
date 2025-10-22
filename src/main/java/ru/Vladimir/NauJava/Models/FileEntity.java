@@ -27,9 +27,22 @@ public class FileEntity {
     @ManyToMany(mappedBy = "files")
     private Set<FileTag> tags = new HashSet<>();
 
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
+
     // Конструктор
     public FileEntity() {
         this.creationDate = new Date();
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 
     // Геттеры и сеттеры

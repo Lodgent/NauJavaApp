@@ -29,6 +29,7 @@ public class User {
     // Пустой конструктор для JPA
     public User() {}
 
+
     public String getId() {
         return id;
     }
