@@ -6,7 +6,7 @@
 ---
 ### Проектирование БД
 
-![Альтернативный текст](images/BD-Diagram.svg)
+![Diagram DataBase](images/DB-Diagram.png)
 
 
 ### Основные команды
