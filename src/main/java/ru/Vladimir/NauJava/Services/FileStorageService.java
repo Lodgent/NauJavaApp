@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 import org.springframework.core.env.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class FileStorageService {
-    private final String storagePath;
+    private final Path storagePath;
 
     @Autowired
     public FileStorageService(Environment env) {
-
-        storagePath = Paths.get("download/").toAbsolutePath().normalize().toString();
+        storagePath = Paths.get("storage").toAbsolutePath().normalize();
 
         try {
-            Files.createDirectories(Paths.get(storagePath));
+            Files.createDirectories(storagePath);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка создания директории", e);
         }
@@ -29,8 +28,8 @@ public class FileStorageService {
 
     public void saveFile(String fileId, byte[] content) {
         try {
-
-            Files.write(Paths.get(fileId), content);
+            Path filePath = storagePath.resolve(fileId);
+            Files.write(filePath, content);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка сохранения файла", e);
         }
@@ -38,7 +37,11 @@ public class FileStorageService {
 
     public byte[] loadFile(String fileId) {
         try {
-            return Files.readAllBytes(Paths.get(fileId));
+            Path filePath = storagePath.resolve(fileId);
+            if (!Files.exists(filePath)) {
+                throw new RuntimeException("Файл не найден: " + fileId);
+            }
+            return Files.readAllBytes(filePath);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка загрузки файла", e);
         }
@@ -46,9 +49,16 @@ public class FileStorageService {
 
     public void deleteFile(String fileId) {
         try {
-            Files.delete(Paths.get(storagePath + fileId));
+            Path filePath = storagePath.resolve(fileId);
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+            }
         } catch (IOException e) {
             throw new RuntimeException("Ошибка удаления файла", e);
         }
+    }
+
+    public boolean fileExists(String fileId) {
+        return Files.exists(storagePath.resolve(fileId));
     }
 }

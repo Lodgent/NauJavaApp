@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Файлообменник</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: #f0f0f0;
+        }
+
+        .upload-section.dragover {
+            border-color: #764ba2;
+            background: #e8e8ff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .upload-form {
+            display: inline-block;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .username-input {
+            margin-top: 20px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            width: 300px;
+        }
+
+        .username-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .files-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        .files-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .files-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .files-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-download {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .file-type {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e9ecef;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .auth-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .auth-forms {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .auth-form {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 250px;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .auth-form h3 {
+            margin: 0 0 15px 0;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95em;
+            box-sizing: border-box;
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .auth-form button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .auth-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: #333;
+        }
+
+        .user-info strong {
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .logout-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📁 Файлообменник</h1>
+            <p>Загружайте, просматривайте и скачивайте файлы</p>
+        </div>
+
+        <div class="content">
+            <!-- Сообщения об успехе/ошибке -->
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <!-- Секция авторизации -->
+            <div class="auth-section">
+                <div th:if="${isLoggedIn}" class="user-info">
+                    <strong>Вы вошли как: <span th:text="${currentUser}"></span></strong>
+                    <form th:action="@{/logout}" method="post" style="display: inline-block; margin-left: 10px;">
+                        <button type="submit" class="logout-btn">Выйти</button>
+                    </form>
+                </div>
+                <div th:if="${!isLoggedIn}" class="auth-forms">
+                    <div class="auth-form">
+                        <h3>🔐 Вход</h3>
+                        <form th:action="@{/login}" method="post">
+                            <input type="text" name="username" placeholder="Имя пользователя" required>
+                            <input type="password" name="password" placeholder="Пароль" required>
+                            <button type="submit">Войти</button>
+                        </form>
+                    </div>
+                    <div class="auth-form">
+                        <h3>📝 Регистрация</h3>
+                        <form th:action="@{/register}" method="post">
+                            <input type="text" name="username" placeholder="Имя пользователя" required>
+                            <input type="password" name="password" placeholder="Пароль" required>
+                            <button type="submit">Зарегистрироваться</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Секция загрузки -->
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-icon">📤</div>
+                <h2>Загрузить файл</h2>
+                <p style="margin: 20px 0; color: #666;">Перетащите файл сюда или нажмите кнопку</p>
+                
+                <form th:action="@{/files/upload}" method="post" enctype="multipart/form-data" class="upload-form">
+                    <div class="file-input-wrapper">
+                        <input type="file" name="file" id="fileInput" class="file-input" required>
+                        <label for="fileInput" class="file-input-label">Выбрать файл</label>
+                    </div>
+                    <div th:if="${!isLoggedIn}">
+                        <input type="text" name="username" class="username-input" placeholder="Имя пользователя (по умолчанию: guest)" value="guest">
+                    </div>
+                    <div th:if="${isLoggedIn}" style="margin-top: 20px; padding: 12px; background: #e8e8ff; border-radius: 8px; color: #667eea; font-weight: 600;">
+                        Файл будет загружен от имени: <span th:text="${currentUser}"></span>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button type="submit" class="file-input-label" style="cursor: pointer;">Загрузить</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Таблица файлов -->
+            <div th:if="${files != null and !files.empty}">
+                <h2 style="margin-bottom: 20px; color: #333;">Загруженные файлы</h2>
+                <table class="files-table">
+                    <thead>
+                        <tr>
+                            <th>Имя файла</th>
+                            <th>Тип</th>
+                            <th>Размер</th>
+                            <th>Дата загрузки</th>
+                            <th>Владелец</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="file : ${files}">
+                            <td>
+                                <div class="file-info">
+                                    <span class="file-name" th:text="${file.fileName}">Имя файла</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="file-type" th:text="${file.fileType}">Тип</span>
+                            </td>
+                            <td>
+                                <span class="file-size" th:text="${#numbers.formatDecimal(file.fileSize / 1024.0, 1, 2)} + ' KB'">Размер</span>
+                            </td>
+                            <td th:text="${#temporals.format(file.creationDate, 'dd.MM.yyyy HH:mm')}">Дата</td>
+                            <td th:text="${file.owner != null ? file.owner.username : 'N/A'}">Владелец</td>
+                            <td>
+                                <a th:href="@{/files/download/{id}(id=${file.id})}" class="btn btn-download">⬇ Скачать</a>
+                                <form th:action="@{/files/delete/{id}(id=${file.id})}" method="post" style="display: inline-block; margin-left: 10px;">
+                                    <button type="submit" class="btn btn-delete" onclick="return confirm('Вы уверены, что хотите удалить этот файл?')">🗑 Удалить</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Пустое состояние -->
+            <div th:if="${files == null or files.empty}" class="empty-state">
+                <div class="empty-state-icon">📂</div>
+                <h2>Файлы не найдены</h2>
+                <p>Загрузите первый файл, чтобы начать работу</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Drag and drop функциональность
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadSection.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadSection.addEventListener(eventName, () => {
+                uploadSection.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadSection.addEventListener(eventName, () => {
+                uploadSection.classList.remove('dragover');
+            }, false);
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+        });
+
+        // Показ имени выбранного файла
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const fileName = e.target.files[0].name;
+                const label = document.querySelector('.file-input-label');
+                label.textContent = 'Выбран: ' + fileName;
+            }
+        });
+    </script>
+</body>
+</html>

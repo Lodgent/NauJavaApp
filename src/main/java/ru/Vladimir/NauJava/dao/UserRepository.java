@@ -6,11 +6,13 @@ import ru.Vladimir.NauJava.dao.custom.UserCustomRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
+@RepositoryRestResource(collectionResourceRel = "users", path = "users")
 public interface UserRepository extends JpaRepository<User, String>, UserCustomRepository {
     // Пример метода поиска с использованием Query Lookup Strategies
     Optional<User> findByUsername(String username);

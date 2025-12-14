@@ -1,17 +1,21 @@
 package ru.Vladimir.NauJava.Services;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.Vladimir.NauJava.Models.User;
+import ru.Vladimir.NauJava.dao.UserRepository;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class UserService {
-    private final Map<String, User> users = new HashMap<>();
+    
+    @Autowired
+    private UserRepository userRepository;
 
     private String hashPassword(String password) {
         try {
@@ -35,25 +39,35 @@ public class UserService {
         return hexString.toString();
     }
 
-    public void registerUser(String username, String password) {
-        if (users.containsKey(username)) {
+    @Transactional
+    public User registerUser(String username, String password) {
+        Optional<User> existingUser = userRepository.findByUsername(username);
+        if (existingUser.isPresent()) {
             throw new RuntimeException("Пользователь уже существует");
         }
 
         String encodedPassword = hashPassword(password);
         User user = new User(username, encodedPassword);
-        users.put(username, user);
+        return userRepository.save(user);
     }
 
     public boolean authenticateUser(String username, String password) {
-        User user = users.get(username);
-        if (user == null) return false;
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            return false;
+        }
 
-        return hashPassword(password).equals(user.getPassword());
+        User user = userOpt.get();
+        String hashedPassword = hashPassword(password);
+        return hashedPassword.equals(user.getPassword());
     }
 
     public User getUserById(String userId) {
-        return users.get(userId);
+        return userRepository.findById(userId).orElse(null);
+    }
+    
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
     }
 }
 
