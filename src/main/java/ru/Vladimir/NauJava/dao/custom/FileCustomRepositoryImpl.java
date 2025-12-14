@@ -7,7 +7,7 @@ import jakarta.persistence.criteria.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class FileCustomRepositoryImpl implements FileCustomRepository {
@@ -17,7 +17,7 @@ public class FileCustomRepositoryImpl implements FileCustomRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public List<FileEntity> findFilesByUserAndDateRange(String username, Date startDate, Date endDate) {
+    public List<FileEntity> findFilesByUserAndDateRange(String username, LocalDateTime startDate, LocalDateTime endDate) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<FileEntity> cq = cb.createQuery(FileEntity.class);
         Root<FileEntity> fileRoot = cq.from(FileEntity.class);

@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -23,15 +23,15 @@ public interface FileRepository extends JpaRepository<FileEntity, String>, FileC
             "AND f.creationDate BETWEEN :startDate AND :endDate")
     List<FileEntity> findFilesByUserAndDateRangeHQL(
             @Param("username") String username,
-            @Param("startDate") Date startDate,
-            @Param("endDate") Date endDate);
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
 
     // Именованный запрос
     @Query(name = "FileEntity.findByOwnerAndDateRange")
     List<FileEntity> findFilesByOwnerAndDateRangeNamed(
             @Param("username") String username,
-            @Param("startDate") Date startDate,
-            @Param("endDate") Date endDate);
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
 
     // HQL запрос для поиска по размеру и типу
     @Query("SELECT f FROM FileEntity f " +
@@ -48,4 +48,8 @@ public interface FileRepository extends JpaRepository<FileEntity, String>, FileC
             @Param("minSize") Long minSize,
             @Param("maxSize") Long maxSize,
             @Param("fileType") String fileType);
+
+    // Запрос для загрузки всех файлов с владельцами (fetch join)
+    @Query("SELECT DISTINCT f FROM FileEntity f LEFT JOIN FETCH f.owner ORDER BY f.creationDate DESC")
+    List<FileEntity> findAllWithOwner();
 }

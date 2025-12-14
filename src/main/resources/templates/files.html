@@ -421,10 +421,16 @@
                             <td>
                                 <span class="file-size" th:text="${#numbers.formatDecimal(file.fileSize / 1024.0, 1, 2)} + ' KB'">Размер</span>
                             </td>
-                            <td th:text="${#temporals.format(file.creationDate, 'dd.MM.yyyy HH:mm')}">Дата</td>
-                            <td th:text="${file.owner != null ? file.owner.username : 'N/A'}">Владелец</td>
                             <td>
-                                <a th:href="@{/files/download/{id}(id=${file.id})}" class="btn btn-download">⬇ Скачать</a>
+                                <span th:if="${file.creationDate != null}" th:text="${#temporals.format(file.creationDate, 'dd.MM.yyyy HH:mm')}">Дата</span>
+                                <span th:if="${file.creationDate == null}">N/A</span>
+                            </td>
+                            <td>
+                                <span th:if="${file.owner != null and file.owner.username != null}" th:text="${file.owner.username}">Владелец</span>
+                                <span th:if="${file.owner == null or file.owner.username == null}">N/A</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/files/download/{id}(id=${file.id})}" class="btn btn-download" style="text-decoration: none; color: white;">⬇ Скачать</a>
                                 <form th:action="@{/files/delete/{id}(id=${file.id})}" method="post" style="display: inline-block; margin-left: 10px;">
                                     <button type="submit" class="btn btn-delete" onclick="return confirm('Вы уверены, что хотите удалить этот файл?')">🗑 Удалить</button>
                                 </form>

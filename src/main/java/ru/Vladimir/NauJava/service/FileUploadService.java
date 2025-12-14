@@ -11,12 +11,14 @@ import ru.Vladimir.NauJava.dao.UserRepository;
 import ru.Vladimir.NauJava.Services.FileStorageService;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 @Service
 public class FileUploadService {
+    private static final Logger logger = Logger.getLogger(FileUploadService.class.getName());
 
     @Autowired
     private FileRepository fileRepository;
@@ -41,7 +43,7 @@ public class FileUploadService {
         fileEntity.setFileName(file.getOriginalFilename());
         fileEntity.setFileSize(file.getSize());
         fileEntity.setOwner(user);
-        fileEntity.setCreationDate(new Date());
+        fileEntity.setCreationDate(LocalDateTime.now());
 
         // Определяем тип файла
         String originalFilename = file.getOriginalFilename();
@@ -54,15 +56,28 @@ public class FileUploadService {
 
         // Сохраняем файл в БД
         fileEntity = fileRepository.save(fileEntity);
+        logger.info("FileEntity saved to database with ID: " + fileEntity.getId() + ", filename: " + fileEntity.getFileName());
 
         // Сохраняем содержимое файла на диск
         fileStorageService.saveFile(fileEntity.getId(), file.getBytes());
+        logger.info("File content saved to disk with ID: " + fileEntity.getId() + ", size: " + file.getBytes().length + " bytes");
 
         return fileEntity;
     }
 
+    @Transactional(readOnly = true)
     public List<FileEntity> getAllFiles() {
-        return fileRepository.findAll();
+        // Используем запрос с fetch join для загрузки owner
+        List<FileEntity> files = fileRepository.findAllWithOwner();
+        logger.info("Retrieved " + files.size() + " files from database");
+        if (!files.isEmpty()) {
+            FileEntity first = files.get(0);
+            logger.info("Sample file - ID: " + first.getId() + 
+                       ", Name: " + first.getFileName() + 
+                       ", Owner: " + (first.getOwner() != null ? first.getOwner().getUsername() : "null") +
+                       ", Date: " + first.getCreationDate());
+        }
+        return files;
     }
 
     public Optional<FileEntity> getFileById(String fileId) {

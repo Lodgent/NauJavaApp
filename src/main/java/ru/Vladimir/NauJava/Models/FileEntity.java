@@ -1,7 +1,7 @@
 package ru.Vladimir.NauJava.Models;
 
 import jakarta.persistence.*;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,7 +36,7 @@ public class FileEntity {
     private long fileSize;
 
     @Column(nullable = false)
-    private Date creationDate;
+    private LocalDateTime creationDate;
 
     @ManyToMany
     @JoinTable(
@@ -46,14 +46,14 @@ public class FileEntity {
     )
     private Set<FileTag> tags = new HashSet<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "owner_id")
     private User owner;
 
 
     // Конструктор
     public FileEntity() {
-        this.creationDate = new Date();
+        this.creationDate = LocalDateTime.now();
     }
 
     public User getOwner() {
@@ -97,11 +97,11 @@ public class FileEntity {
         this.fileSize = fileSize;
     }
 
-    public Date getCreationDate() {
+    public LocalDateTime getCreationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(Date creationDate) {
+    public void setCreationDate(LocalDateTime creationDate) {
         this.creationDate = creationDate;
     }
 

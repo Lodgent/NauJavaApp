@@ -14,8 +14,7 @@ import ru.Vladimir.NauJava.dao.UserRepository;
 import ru.Vladimir.NauJava.dao.FileTagRepository;
 import ru.Vladimir.NauJava.Models.FileTag;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @SpringBootTest
@@ -42,13 +41,9 @@ class CustomRepositoryTest {
         user = userRepository.save(user);
 
         // Создаем файлы с разными датами
-        Date now = new Date();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(now);
-        cal.add(Calendar.DAY_OF_MONTH, -5);
-        Date startDate = cal.getTime();
-        cal.add(Calendar.DAY_OF_MONTH, 10);
-        Date endDate = cal.getTime();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startDate = now.minusDays(5);
+        LocalDateTime endDate = now.plusDays(10);
 
         FileEntity file1 = new FileEntity();
         file1.setFileName("file1.txt");

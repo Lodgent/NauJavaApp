@@ -19,6 +19,7 @@ import ru.Vladimir.NauJava.dao.FileTagRepository;
 import ru.Vladimir.NauJava.dao.OperationHistoryRepository;
 import ru.Vladimir.NauJava.dao.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -48,8 +49,8 @@ public class CustomRepositoryController {
     @GetMapping("/files/byUserAndDateRange")
     public ResponseEntity<List<FileEntity>> findFilesByUserAndDateRange(
             @Parameter(description = "Имя пользователя") @RequestParam String username,
-            @Parameter(description = "Начальная дата (формат: yyyy-MM-ddTHH:mm:ss)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date startDate,
-            @Parameter(description = "Конечная дата (формат: yyyy-MM-ddTHH:mm:ss)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date endDate) {
+            @Parameter(description = "Начальная дата (формат: yyyy-MM-ddTHH:mm:ss)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @Parameter(description = "Конечная дата (формат: yyyy-MM-ddTHH:mm:ss)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         List<FileEntity> files = fileRepository.findFilesByUserAndDateRange(username, startDate, endDate);
         return ResponseEntity.ok(files);
     }
