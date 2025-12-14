@@ -1,11 +1,22 @@
-package ru.Vladimir.NauJava.entity;
-
+package ru.Vladimir.NauJava.Models;
 
 import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity
 @Table(name = "operation_history")
+@NamedQueries({
+    @NamedQuery(
+        name = "OperationHistory.findByUserAndDateRange",
+        query = "SELECT o FROM OperationHistory o WHERE o.user.username = :username " +
+                "AND o.operationDate BETWEEN :startDate AND :endDate"
+    ),
+    @NamedQuery(
+        name = "OperationHistory.findByOperationTypeAndStatus",
+        query = "SELECT o FROM OperationHistory o WHERE o.operationType = :operationType " +
+                "AND o.status = :status"
+    )
+})
 public class OperationHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +28,7 @@ public class OperationHistory {
 
     @ManyToOne
     @JoinColumn(name = "file_id")
-    private File file;
+    private FileEntity file;
 
     @Column(nullable = false)
     private String operationType;
@@ -45,11 +56,11 @@ public class OperationHistory {
         this.user = user;
     }
 
-    public File getFile() {
+    public FileEntity getFile() {
         return file;
     }
 
-    public void setFile(File file) {
+    public void setFile(FileEntity file) {
         this.file = file;
     }
 
@@ -77,3 +88,5 @@ public class OperationHistory {
         this.status = status;
     }
 }
+
+

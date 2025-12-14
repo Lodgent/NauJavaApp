@@ -11,6 +11,8 @@ import ru.Vladimir.NauJava.Models.User;
 import ru.Vladimir.NauJava.service.UserFileService;
 import ru.Vladimir.NauJava.dao.UserRepository;
 
+import java.util.Optional;
+
 @SpringBootTest
 @Transactional
 class TransactionalTest {
@@ -63,8 +65,8 @@ class TransactionalTest {
         });
 
         // Проверяем, что данные не сохранились в БД
-        User user = userRepository.findByUsername(username);
-        Assertions.assertNull(user);
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        Assertions.assertTrue(userOpt.isEmpty());
     }
 
 

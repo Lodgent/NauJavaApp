@@ -1,10 +1,21 @@
 package ru.Vladimir.NauJava.Models;
 
 import jakarta.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "file_tag")
+@NamedQueries({
+    @NamedQuery(
+        name = "FileTag.findByTagName",
+        query = "SELECT t FROM FileTag t WHERE t.tag = :tagName"
+    ),
+    @NamedQuery(
+        name = "FileTag.findByTagNameContaining",
+        query = "SELECT t FROM FileTag t WHERE t.tag LIKE :pattern"
+    )
+})
 public class FileTag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,7 +25,7 @@ public class FileTag {
     private String tag;
 
     @ManyToMany(mappedBy = "tags")
-    private Set<File> files;
+    private Set<FileEntity> files = new HashSet<>();
 
     // геттеры и сеттеры
     public Long getTagId() {
@@ -33,11 +44,11 @@ public class FileTag {
         this.tag = tag;
     }
 
-    public Set<File> getFiles() {
+    public Set<FileEntity> getFiles() {
         return files;
     }
 
-    public void setFiles(Set<File> files) {
+    public void setFiles(Set<FileEntity> files) {
         this.files = files;
     }
 }

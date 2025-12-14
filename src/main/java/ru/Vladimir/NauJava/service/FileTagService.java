@@ -2,7 +2,7 @@ package ru.Vladimir.NauJava.service;
 
 
 import ru.Vladimir.NauJava.Models.FileEntity;
-import  ru.Vladimir.NauJava.Models.FileTag;
+import ru.Vladimir.NauJava.Models.FileTag;
 import ru.Vladimir.NauJava.dao.FileRepository;
 import ru.Vladimir.NauJava.dao.FileTagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import java.util.List;
 
 @Service
 public class FileTagService {
@@ -34,11 +36,11 @@ public class FileTagService {
      * @param tagNames список названий тегов
      * @return созданный файл с тегами
      */
-    public File createFileWithTags(File file, List<String> tagNames) {
+    public FileEntity createFileWithTags(FileEntity file, List<String> tagNames) {
         TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
         try {
             // Сохраняем файл
-            File savedFile = fileRepository.save(file);
+            FileEntity savedFile = fileRepository.save(file);
 
             // Создаем теги
             for (String tagName : tagNames) {
@@ -47,7 +49,7 @@ public class FileTagService {
                 tag = fileTagRepository.save(tag);
 
                 // Связываем файл с тегом
-                savedFile.getTags().add(tag);
+                savedFile.addTag(tag);
             }
 
             // Сохраняем изменения

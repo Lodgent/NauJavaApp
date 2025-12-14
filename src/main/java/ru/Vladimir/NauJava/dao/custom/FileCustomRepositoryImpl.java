@@ -4,15 +4,12 @@ package ru.Vladimir.NauJava.dao.custom;
 import ru.Vladimir.NauJava.Models.FileEntity;
 import ru.Vladimir.NauJava.Models.User;
 import jakarta.persistence.criteria.*;
-import org.springframework.stereotype.Repository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Date;
 import java.util.List;
 
-@Repository
 public class FileCustomRepositoryImpl implements FileCustomRepository {
 
     @PersistenceContext
@@ -24,10 +21,10 @@ public class FileCustomRepositoryImpl implements FileCustomRepository {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<FileEntity> cq = cb.createQuery(FileEntity.class);
         Root<FileEntity> fileRoot = cq.from(FileEntity.class);
-        Join<FileEntity, User> userJoin = fileRoot.join("user");
+        Join<FileEntity, User> userJoin = fileRoot.join("owner");
 
         Predicate usernamePredicate = cb.equal(userJoin.get("username"), username);
-        Predicate datePredicate = cb.between(fileRoot.get("uploadDate"), startDate, endDate);
+        Predicate datePredicate = cb.between(fileRoot.get("creationDate"), startDate, endDate);
 
         cq.where(cb.and(usernamePredicate, datePredicate));
 
@@ -42,7 +39,7 @@ public class FileCustomRepositoryImpl implements FileCustomRepository {
         Root<FileEntity> fileRoot = cq.from(FileEntity.class);
 
         Predicate sizePredicate = cb.between(fileRoot.get("fileSize"), minSize, maxSize);
-        Predicate contentTypePredicate = cb.equal(fileRoot.get("contentType"), contentType);
+        Predicate contentTypePredicate = cb.equal(fileRoot.get("fileType"), contentType);
 
         cq.where(cb.and(sizePredicate, contentTypePredicate));
 

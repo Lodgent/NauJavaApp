@@ -6,6 +6,16 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "file_links")
+@NamedQueries({
+    @NamedQuery(
+        name = "FileLink.findByFileIdAndNotExpired",
+        query = "SELECT l FROM FileLink l WHERE l.fileId = :fileId AND l.isExpired = false"
+    ),
+    @NamedQuery(
+        name = "FileLink.findByAccessToken",
+        query = "SELECT l FROM FileLink l WHERE l.accessToken = :accessToken"
+    )
+})
 public class FileLink {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -14,7 +24,7 @@ public class FileLink {
     @Column(nullable = false, unique = true)
     private String accessToken;
 
-    @Column(nullable = false)
+    @Column(name = "file_id", nullable = false)
     private String fileId;
 
     @Column(nullable = false)
@@ -25,11 +35,6 @@ public class FileLink {
 
     @Column(nullable = false)
     private Date creationDate;
-
-    // Связь с файлом
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "file_id", insertable = false, updatable = false)
-    private FileEntity file;
 
     // Конструктор
     public FileLink() {
@@ -58,15 +63,6 @@ public class FileLink {
 
     public void setFileId(String fileId) {
         this.fileId = fileId;
-    }
-
-    public FileEntity getFile() {
-        return file;
-    }
-
-    public void setFile(FileEntity file) {
-        this.file = file;
-        this.fileId = file.getId();
     }
 
     public long getExpirationTime() {

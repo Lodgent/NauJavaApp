@@ -7,6 +7,20 @@ import java.util.Set;
 
 @Entity
 @Table(name = "files")
+@NamedQueries({
+    @NamedQuery(
+        name = "FileEntity.findByOwnerAndDateRange",
+        query = "SELECT f FROM FileEntity f " +
+                "WHERE f.owner.username = :username " +
+                "AND f.creationDate BETWEEN :startDate AND :endDate"
+    ),
+    @NamedQuery(
+        name = "FileEntity.findBySizeAndType",
+        query = "SELECT f FROM FileEntity f " +
+                "WHERE f.fileSize BETWEEN :minSize AND :maxSize " +
+                "AND f.fileType = :fileType"
+    )
+})
 public class FileEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -24,7 +38,12 @@ public class FileEntity {
     @Column(nullable = false)
     private Date creationDate;
 
-    @ManyToMany(mappedBy = "files")
+    @ManyToMany
+    @JoinTable(
+        name = "file_tag_map",
+        joinColumns = @JoinColumn(name = "file_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
     private Set<FileTag> tags = new HashSet<>();
 
     @ManyToOne

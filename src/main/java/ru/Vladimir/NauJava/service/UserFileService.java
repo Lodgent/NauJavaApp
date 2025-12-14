@@ -34,6 +34,13 @@ public class UserFileService {
         FileEntity file = new FileEntity();
         file.setFileName(fileName);
         file.setOwner(user);
+        file.setFileSize(0L);
+        // Определяем тип файла из расширения
+        if (fileName.contains(".")) {
+            file.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
+        } else {
+            file.setFileType("unknown");
+        }
         file = fileRepository.save(file);
 
         // Добавляем файл к пользователю

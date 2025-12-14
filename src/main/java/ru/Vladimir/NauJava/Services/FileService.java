@@ -48,14 +48,20 @@ public class FileService {
             FileEntity file = new FileEntity();
             file.setId(UUID.randomUUID().toString());
             file.setFileName(filePath.substring(filePath.lastIndexOf("\\") + 1));
-            file.setOwnerId(userId);
-            file.setContent(fileBytes);
+            file.setOwner(user);
+            file.setFileSize(fileBytes.length);
+            String fileName = file.getFileName();
+            if (fileName.contains(".")) {
+                file.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
+            } else {
+                file.setFileType("unknown");
+            }
 
             fileStorageService.saveFile(file.getId(), fileBytes);
 
             files.put(file.getId(), file);
 
-            user.getFiles().add(file.getId());
+            user.addFile(file);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при загрузке файла", e);
         }
@@ -87,8 +93,10 @@ public class FileService {
 
         fileStorageService.deleteFile(fileId);
 
-        User owner = userService.getUserById(file.getOwnerId());
-        owner.getFiles().remove(fileId);
+        User owner = file.getOwner();
+        if (owner != null) {
+            owner.removeFile(file);
+        }
     }
 
     public List<FileEntity> getAllFiles() {

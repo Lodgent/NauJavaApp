@@ -6,12 +6,20 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 import ru.Vladimir.NauJava.Models.FileEntity;
 import ru.Vladimir.NauJava.Models.User;
 import ru.Vladimir.NauJava.dao.FileRepository;
 import ru.Vladimir.NauJava.dao.UserRepository;
+import ru.Vladimir.NauJava.dao.FileTagRepository;
+import ru.Vladimir.NauJava.Models.FileTag;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 @SpringBootTest
+@Transactional
 @Rollback
 class CustomRepositoryTest {
 
@@ -21,62 +29,107 @@ class CustomRepositoryTest {
     @Autowired
     private FileRepository fileRepository;
 
+    @Autowired
+    private FileTagRepository fileTagRepository;
+
     /**
-     * Тест кастомного метода поиска файлов по владельцу
+     * Тест кастомного метода поиска файлов по пользователю и диапазону дат (HQL, Named, Criteria API)
      */
     @Test
-    void testFindFilesByOwner() {
+    void testFindFilesByUserAndDateRange() {
         // Создаем пользователя
-        User user = new User();
-        user.setUsername("testUser");
+        User user = new User("testUser", "password");
         user = userRepository.save(user);
 
-        // Создаем файлы
+        // Создаем файлы с разными датами
+        Date now = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(now);
+        cal.add(Calendar.DAY_OF_MONTH, -5);
+        Date startDate = cal.getTime();
+        cal.add(Calendar.DAY_OF_MONTH, 10);
+        Date endDate = cal.getTime();
+
         FileEntity file1 = new FileEntity();
         file1.setFileName("file1.txt");
+        file1.setFileType("txt");
+        file1.setFileSize(100L);
         file1.setOwner(user);
+        file1.setCreationDate(now);
+        file1 = fileRepository.save(file1);
 
         FileEntity file2 = new FileEntity();
         file2.setFileName("file2.txt");
+        file2.setFileType("txt");
+        file2.setFileSize(200L);
         file2.setOwner(user);
+        file2.setCreationDate(now);
+        file2 = fileRepository.save(file2);
 
-        fileRepository.save(file1);
-        fileRepository.save(file2);
+        // Тестируем HQL запрос
+        List<FileEntity> filesHQL = fileRepository.findFilesByUserAndDateRangeHQL(
+                user.getUsername(), startDate, endDate);
+        Assertions.assertEquals(2, filesHQL.size());
 
-        // Ищем файлы по владельцу
-        List<FileEntity> files = fileRepository.findFilesByOwner(user.getId());
+        // Тестируем именованный запрос
+        List<FileEntity> filesNamed = fileRepository.findFilesByOwnerAndDateRangeNamed(
+                user.getUsername(), startDate, endDate);
+        Assertions.assertEquals(2, filesNamed.size());
 
-        // Проверки
-        Assertions.assertEquals(2, files.size());
-        Assertions.assertTrue(files.contains(file1));
-        Assertions.assertTrue(files.contains(file2));
+        // Тестируем Criteria API
+        List<FileEntity> filesCriteria = fileRepository.findFilesByUserAndDateRange(
+                user.getUsername(), startDate, endDate);
+        Assertions.assertEquals(2, filesCriteria.size());
     }
 
     /**
-     * Тест кастомного метода подсчета файлов по типу
+     * Тест кастомного метода поиска пользователя по имени (HQL, Named, Criteria API)
      */
     @Test
-    void testCountFilesByType() {
-        // Создаем файлы разных типов
-        FileEntity file1 = new FileEntity();
-        file1.setFileName("image.jpg");
-        file1.setFileType("image");
+    void testFindUserByUsername() {
+        // Создаем пользователя
+        User user = new User("testUser", "password");
+        user = userRepository.save(user);
 
-        FileEntity file2 = new FileEntity();
-        file2.setFileName("doc.pdf");
-        file2.setFileType("document");
+        // Тестируем HQL запрос
+        User foundHQL = userRepository.findByUsernameHQL("testUser").orElse(null);
+        Assertions.assertNotNull(foundHQL);
+        Assertions.assertEquals("testUser", foundHQL.getUsername());
 
-        FileEntity file3 = new FileEntity();
-        file3.setFileName("music.mp3");
-        file3.setFileType("audio");
+        // Тестируем именованный запрос
+        User foundNamed = userRepository.findByUsernameNamed("testUser").orElse(null);
+        Assertions.assertNotNull(foundNamed);
+        Assertions.assertEquals("testUser", foundNamed.getUsername());
 
-        fileRepository.save(file1);
-        fileRepository.save(file2);
-        fileRepository.save(file3);
+        // Тестируем Criteria API
+        User foundCriteria = userRepository.findByUsernameCriteria("testUser").orElse(null);
+        Assertions.assertNotNull(foundCriteria);
+        Assertions.assertEquals("testUser", foundCriteria.getUsername());
+    }
 
-        // Проверяем подсчет
-        Assertions.assertEquals(1, fileRepository.countFilesByType("image"));
-        Assertions.assertEquals(1, fileRepository.countFilesByType("document"));
-        Assertions.assertEquals(1, fileRepository.countFilesByType("audio"));
+    /**
+     * Тест кастомного метода поиска тегов по имени (HQL, Named, Criteria API)
+     */
+    @Test
+    void testFindFileTagByName() {
+        // Создаем тег
+        FileTag tag = new FileTag();
+        tag.setTag("important");
+        tag = fileTagRepository.save(tag);
+
+        // Тестируем HQL запрос
+        FileTag foundHQL = fileTagRepository.findByTagNameHQL("important").orElse(null);
+        Assertions.assertNotNull(foundHQL);
+        Assertions.assertEquals("important", foundHQL.getTag());
+
+        // Тестируем именованный запрос
+        FileTag foundNamed = fileTagRepository.findByTagNameNamed("important").orElse(null);
+        Assertions.assertNotNull(foundNamed);
+        Assertions.assertEquals("important", foundNamed.getTag());
+
+        // Тестируем Criteria API
+        FileTag foundCriteria = fileTagRepository.findByTagNameCriteria("important").orElse(null);
+        Assertions.assertNotNull(foundCriteria);
+        Assertions.assertEquals("important", foundCriteria.getTag());
     }
 }

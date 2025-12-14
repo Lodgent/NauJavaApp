@@ -6,6 +6,16 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
+@NamedQueries({
+    @NamedQuery(
+        name = "User.findByUsernameAndStatus",
+        query = "SELECT u FROM User u WHERE u.username = :username"
+    ),
+    @NamedQuery(
+        name = "User.findByUsernameContaining",
+        query = "SELECT u FROM User u WHERE u.username LIKE :pattern"
+    )
+})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -1,5 +1,6 @@
 package ru.Vladimir.NauJava.Config;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 
@@ -14,6 +15,7 @@ public class ConsoleApp {
     private FileCommandProcessor commandProcessor;
 
     @Bean
+    @ConditionalOnProperty(name = "app.console.enabled", havingValue = "true", matchIfMissing = false)
     public CommandLineRunner commandScanner() {
         return args -> {
             try (Scanner scanner = new Scanner(System.in)) {
